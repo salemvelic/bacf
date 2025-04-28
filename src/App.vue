@@ -1,27 +1,43 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+  <div class="min-h-screen bg-blue-700 flex items-center justify-center p-4">
+    <div class="flex flex-col bg-gray-100 w-full max-w-3xl rounded-lg shadow-md p-6 space-y-4 overflow-y-auto h-[80vh]">
+      <div class="text-center text-sm text-gray-500 mb-6">
+        {{ today }}
+      </div>
+      <div class="flex-1 overflow-auto">
+        <div v-for="comment in rootComments" :key="comment.id" class="space-y-4">
+          <CommentItem :comment="comment" :comments="comments" @add-reply="addReply" />
+        </div>
+      </div>
+
+      <div class="mt-6 flex gap-2">
+        <input v-model="newComment" class="flex-1 p-2 rounded border" placeholder="...type something" />
+        <button @click="addComment" class="bg-gray-300 px-4 py-2 rounded">Send</button>
+      </div>
+    </div>
+  </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-import HelloWorld from './components/HelloWorld.vue';
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { useCommentsStore } from '@/stores/comments'
+import CommentItem from './components/CommentItem.vue'
 
-export default defineComponent({
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-});
-</script>
+const commentsStore = useCommentsStore()
+const newComment = ref('')
 
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+const today = new Date().toLocaleDateString('en-GB', {
+  weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric'
+})
+
+const rootComments = computed(() => commentsStore.rootComments)
+
+const addComment = () => {
+  commentsStore.addComment(newComment.value)
+  newComment.value = ''
 }
-</style>
+
+const addReply = (parentId: string, replyText: string) => {
+  commentsStore.addReply(parentId, replyText)
+}
+</script>
